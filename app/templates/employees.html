@@ -1,0 +1,68 @@
+{% extends 'layout/base.html' %}
+{% block title %}Danh sách nhân viên phòng DLTT{% endblock %}
+{% block content %}
+    <div class="container py-5">
+        <div class="header text-center">
+            <h1><i class="fas fa-users me-2"></i>Danh Sách Nhân Sự</h1>
+            <p class="mb-0">Quản lý thông tin nhân viên Phòng Dữ Liệu Thông tin đất đai</p>
+        </div>
+
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%">STT</th>
+                            <th style="width: 30%">Họ tên</th>
+                            <th style="width: 20%">Chức vụ</th>
+                            <th style="width: 20%">Email</th>
+                            <th style="width: 15%">Số điện thoại</th>
+                            <th style="width: 15%">Tổ chuyên môn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in employees %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td>{{ e.name }}</td>
+                            <td>{{ e.position }}</td>
+                            <td>{{ e.email or '-' }}</td>
+                            <td>{{ e.phone or '-' }}</td>
+                            <td>
+                                {% if e.department %}
+                                <span class="status-pill" style="background-color: {% if e.department.name == 'Quản lý' %}#e3f2fd{% elif e.department.name == 'Kế toán' %}#fff8e1{% elif e.department.name == 'Nhân sự' %}#e8f5e9{% else %}#f3e5f5{% endif %}; 
+                                     color: {% if e.department.name == 'Quản lý' %}#1976d2{% elif e.department.name == 'Kế toán' %}#ff8f00{% elif e.department.name == 'Nhân sự' %}#388e3c{% else %}#8e24aa{% endif %}">
+                                    {{ e.department.name }}
+                                </span>
+                                {% else %}
+                                <span class="status-pill" style="background-color: #ffebee; color: #d32f2f; border: 1px dashed #d32f2f;">
+                                    Chưa phân tổ
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if not employees %}
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="no-data">
+                                <i class="fas fa-info-circle me-2"></i>Không có dữ liệu nhân sự
+                            </td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+
