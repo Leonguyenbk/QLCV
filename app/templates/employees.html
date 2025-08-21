@@ -1,30 +1,83 @@
 {% extends 'layout/base.html' %}
 {% block title %}Danh sách nhân viên phòng DLTT{% endblock %}
 {% block content %}
-    <div class="container py-5">
-        <div class="header text-center">
-            <h1><i class="fas fa-users me-2"></i>Danh Sách Nhân Sự</h1>
-            <p class="mb-0">Quản lý thông tin nhân viên Phòng Dữ Liệu Thông tin đất đai</p>
+    <div class="container py-2">
+        <div class="text-center py-1 mb-4">
+            <h2 class="h5 mb-1">
+                <i class="fas fa-users me-2"></i>Danh Sách Nhân Sự
+            </h2>
+            <small class="text-muted">Quản lý thông tin nhân viên Phòng Dữ Liệu Thông tin đất đai</small>
         </div>
-
+          <div class="d-flex align-items-center justify-content-center mb-4">
+            <!-- Form tìm kiếm đơn giản -->
+            <form class="row g-2 mb-3" method="get" action="{{ url_for('main.list_employees') }}">
+                <!-- Ô tìm kiếm -->
+                <div class="col-md-4">
+                    <input class="form-control" type="search" name="keyword"
+                        value="{{ request.args.get('keyword','') }}"
+                        placeholder="Tìm theo tên nhân viên...">
+                </div>
+                <!-- Dropdown phòng ban -->
+                <div class="col-md-4">
+                    <select class="form-select" name="category_id" id="category">
+                        <option value="">-- Tất cả phòng ban --</option>
+                        {% for d in departments %}
+                            <option value="{{ d.id }}"
+                                {% if d.id == selected_department %}selected{% endif %}>
+                                {{ d.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Nút tìm -->
+                <div class="col-md-4">
+                    <button class="btn btn-primary w-100" type="submit">
+                        <i class="fas fa-search me-1"></i> Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% if pagination.pages > 1 %}
+        <ul class="pagination justify-content-center">
+            {% for p in pagination.iter_pages() %}
+            {% if p %}
+                {% if p == pagination.page %}
+                <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link"
+                    href="{{ url_for('main.list_employees',
+                                        page=p,
+                                        keyword=request.args.get('keyword'),
+                                        category_id=request.args.get('category_id')) }}">
+                    {{ p }}
+                    </a>
+                </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+        {% endif %}
         <div class="table-container">
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
                         <tr>
-                            <th style="width: 5%">STT</th>
-                            <th style="width: 30%">Họ tên</th>
-                            <th style="width: 20%">Chức vụ</th>
-                            <th style="width: 20%">Email</th>
-                            <th style="width: 15%">Số điện thoại</th>
-                            <th style="width: 15%">Tổ chuyên môn</th>
+                            <th class="text-center">Mã NV</th>
+                            <th>Họ tên</th>
+                            <th>Chức vụ</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Tổ chuyên môn</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for e in employees %}
                         <tr>
-                            <td class="text-center">{{ loop.index }}</td>
-                            <td>{{ e.name }}</td>
+                            <td class="text-center">{{ e.id }}</td>
+                            <td><a href="{{ url_for('main.employee_detail', employee_id=e.id) }}">{{ e.name }}</a></td>
                             <td>{{ e.position }}</td>
                             <td>{{ e.email or '-' }}</td>
                             <td>{{ e.phone or '-' }}</td>
@@ -57,12 +110,3 @@
         </div>
     </div>
 {% endblock %}
-<!-- Bootstrap JS Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Font Awesome for icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-
-

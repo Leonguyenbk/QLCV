@@ -12,20 +12,19 @@
     }
     
     body {
-        position: relative;
+        display: flex;
+        flex-direction: column;
         min-height: 100vh;
         margin: 0;
-        padding-bottom: 400px; /* Space for footer */
     }
     
     .footer {
         background: linear-gradient(135deg, var(--secondary-color), var(--dark-color));
         color: white;
-        padding: 60px 0 20px;
-        position: absolute;
-        bottom: 0;
+        padding: 40px 0 15px;
         width: 100%;
         box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+        margin-top: auto;
     }
     
     .footer-logo {
@@ -46,8 +45,8 @@
     
     .footer-links h3, .footer-contact h3 {
         color: white;
-        font-size: 20px;
-        margin-bottom: 25px;
+        font-size: 18px;
+        margin-bottom: 20px;
         position: relative;
         padding-bottom: 10px;
     }
@@ -138,8 +137,8 @@
     
     .footer-bottom {
         background: rgba(0, 0, 0, 0.2);
-        padding: 15px 0;
-        margin-top: 40px;
+        padding: 10px 0;
+        margin-top: 30px;
     }
     
     .footer-bottom p {
@@ -189,24 +188,9 @@
     }
     
     @media (max-width: 767px) {
-        body {
-            padding-bottom: 800px;
-        }
-        
         .footer-links li, .footer-contact p {
             margin-bottom: 15px;
         }
-    }
-    
-    /* Animation */
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
-    }
-    
-    .footer-logo {
-        animation: float 3s ease-in-out infinite;
     }
 </style>
 
@@ -226,7 +210,7 @@
             </div>
             <div class="col-md-6">
                 <div class="footer-contact">
-                    <h5>Contact Us</h5>
+                    <h3>Liên hệ</h3>
                     <p><i class="fas fa-envelope me-2"></i> contact@example.com</p>
                     <p><i class="fas fa-phone me-2"></i> +123 456 7890</p>
                 </div>
@@ -286,4 +270,3 @@
         });
     });
 </script>
-

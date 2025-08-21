@@ -39,7 +39,7 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 .table {
-    width: 90%;
+    width: 100%;
     border-collapse: collapse;
     border: 1px solid #000; /* màu đen, bạn có thể thay đổi */
     margin-bottom: 10px;
