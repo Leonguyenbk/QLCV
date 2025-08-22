@@ -1,12 +1,41 @@
-from flask import Blueprint, render_template, request, current_app, abort
+from flask import Blueprint, render_template, request, current_app, abort, flash, redirect, url_for
+from flask_login import login_user, logout_user, current_user, login_required
 from app.models import Employee, Department, Absence
-from app import db, utils
-from datetime import date
+from . import db, utils, login
 from calendar import monthrange
 import math
 
 
 main = Blueprint('main', __name__)
+# Trong file routes của blueprint 'main'
+@login.user_loader
+def user_load(user_id):
+    return utils.get_user_by_id(user_id=user_id)
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    err_msg = ''
+    if request.method.__eq__('POST'):
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user = utils.check_login(username=username,
+                                password=password)
+        if user:
+            login_user(user=user)
+            next = request.args.get('next', 'home')
+            return redirect(url_for(next))
+        else:
+            err_msg = 'Username hoặc mật khẩu không chính xác'
+
+    return render_template('login.html', err_msg=err_msg)
+
+@main.route('/logout')
+def logout():
+    logout_user()
+    flash('Bạn đã đăng xuất.', 'info')
+    return redirect(url_for('main.login'))
+
 
 @main.route('/')
 def index():

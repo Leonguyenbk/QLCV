@@ -1,18 +1,18 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_login import LoginManager
 
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost/dbdltt?charset=utf8mb4'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['PAGE_SIZE'] = 20
-    app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'  # theme cho admin
-    app.config['BABEL_DEFAULT_LOCALE'] = 'vi'  # set locale là tiếng Việt
     app.secret_key = 'mysecretkey'
 
     db.init_app(app)
     migrate.init_app(app, db)
+    login.init_app(app)
     from . import models
     from .admin import init_admin   # <<< quan trọng
     with app.app_context():
@@ -26,3 +26,7 @@ def create_app():
 
 db = SQLAlchemy()
 migrate = Migrate()
+login = LoginManager()
+login.login_view = 'main.login' # Tên blueprint.tên_hàm_route
+login.login_message = 'Vui lòng đăng nhập để truy cập trang này.'
+login.login_message_category = 'warning'

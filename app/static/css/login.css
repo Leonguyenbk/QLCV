@@ -1,0 +1,28 @@
+body {
+    overflow-x: hidden;
+}
+
+.bg-image {
+    /* Bạn có thể đổi ảnh nền tại đây */
+    background-image: url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2832&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+}
+
+.login-form-container {
+    width: 100%;
+    max-width: 450px;
+    padding: 3rem;
+}
+
+.form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-primary {
+    padding: 0.75rem 1rem;
+    font-size: 1.05rem;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}

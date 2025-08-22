@@ -1,9 +1,13 @@
 from app import create_app, db
-from app.models import Employee, Absence, AbsencePart
+from app.models import Employee, Absence, AbsencePart, User, SystemRole
 from flask import current_app
 from calendar import monthrange
 from datetime import date
+from werkzeug.security import generate_password_hash, check_password_hash
 import re
+
+def get_user_by_id(user_id):
+    return User.query.get(user_id)
 
 def load_employees(employee_id=None, kw=None, department_id=None, page=1):
     query = Employee.query
@@ -24,6 +28,14 @@ def load_employees(employee_id=None, kw=None, department_id=None, page=1):
     start = (page - 1)*page_size
     end = page_size + start
     return query.slice(start, end).all()
+
+def check_login(username: str, password: str):
+    user = User.query.filter(User.username == username.strip()).first()
+    if not user:
+        return None
+    if check_password_hash(user.password_hash, password.strip()):
+        return user
+    return None
 
 def get_employee_by_id(employee_id):
     return Employee.query.get(employee_id)

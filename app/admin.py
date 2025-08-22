@@ -107,8 +107,7 @@ class AbsenceAdmin(ModelView):
     column_searchable_list = ('employee.name', 'reason')
     form_columns = ('employee', 'work_date', 'part', 'is_permitted', 'reason')
     form_ajax_refs = {'employee': {'fields': ('name', 'email')}}
-
-
+    
     def on_model_change(self, form, model, is_created):
         q = Absence.query.filter_by(
             employee_id=model.employee_id, work_date=model.work_date, part=model.part
