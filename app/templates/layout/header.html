@@ -54,17 +54,21 @@
     .nav-link {
         padding: 0.5rem 1rem;
     }
+    .navbar-gradient {
+        background: linear-gradient(135deg, #3f87a6, #4b6cb7);
+    }
 </style>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-gradient sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="#"><i class="fas fa-tasks me-2"></i>Phòng Dữ liệu - Thông tin đất đai</a>
+        <a class="navbar-brand" href="{{ url_for('main.index') }}"><i class="fas fa-tasks me-2"></i>Phòng Dữ liệu - Thông tin đất đai</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#"><i class="fas fa-users me-1"></i> Nhân sự</a>
+                    {# Thêm class 'active' nếu đang ở trang nhân sự #}
+                    <a class="nav-link" href="{{ url_for('main.list_employees') }}"><i class="fas fa-users me-1"></i> Nhân sự</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#"><i class="fas fa-list-check me-1"></i> Công việc</a>
@@ -79,5 +83,3 @@
 
 <!-- Bootstrap JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-

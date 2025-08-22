@@ -1,0 +1,111 @@
+{% extends 'layout/base.html' %}
+{% block title %}KPI Chuyên cần — Tổng quan tháng{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <a href="{{ url_for('main.kpi_absence_summary_all') }}" class="text-muted text-decoration-none d-block mb-2">
+        <i class="fas fa-arrow-left me-1"></i> Quay lại Tổng quan
+      </a>
+      <h3 class="mb-0">KPI Chuyên cần — {{ employee.name }}</h3>
+      <span class="text-muted">Tháng {{ "%02d"|format(month) }}/{{ year }}</span>
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+      <a class="btn btn-sm btn-outline-secondary"
+         href="{{ url_for('main.kpi_detail', employee_id=employee.id, month=prev_month_mm) }}" title="Tháng trước">‹</a>
+
+      <!-- ô chọn tháng năm -->
+      <input type="month" class="form-control form-control-sm"
+             style="width: 150px;"
+             value="{{ year }}-{{ '%02d'|format(month) }}"
+             onchange="
+                if (this.value) {
+                  const parts = this.value.split('-');
+                  const newFormat = `${parts[1]}-${parts[0]}`;
+                  window.location.href = `{{ url_for('main.kpi_detail', employee_id=employee.id) }}?month=${newFormat}`;
+                }">
+
+      <a class="btn btn-sm btn-outline-secondary"
+         href="{{ url_for('main.kpi_detail', employee_id=employee.id, month=next_month_mm) }}" title="Tháng sau">›</a>
+
+      <a class="btn btn-sm btn-outline-primary"
+         href="{{ url_for('main.kpi_detail', employee_id=employee.id, month=month_str_mm, export='csv') }}">
+        <i class="fas fa-download me-1"></i> CSV
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="text-muted">Điểm KPI</div>
+          <div class="display-6">{{ score }}</div>
+          <div class="text-muted">Công thức: 100 - 2*Có phép - 10*Không phép</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-9">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="text-muted">Nghỉ có phép (ngày)</div>
+              <div class="h4 mb-0">{{ summary.permitted_days_off }}</div>
+            </div>
+            <div class="col">
+              <div class="text-muted">Nghỉ không phép (ngày)</div>
+              <div class="h4 mb-0 text-danger">{{ summary.unpermitted_days_off }}</div>
+            </div>
+            <div class="col">
+              <div class="text-muted">Tổng nghỉ (ngày)</div>
+              <div class="h4 mb-0 fw-semibold">{{ summary.total_days_off }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h6 class="mb-3">Chi tiết ngày nghỉ</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle">
+          <thead class="table-light">
+          <tr>
+            <th style="width:56px">#</th>
+            <th>Ngày</th>
+            <th>Buổi</th>
+            <th>Loại</th>
+            <th>Lý do</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% if records %}
+            {% for r in records %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ r.work_date.strftime('%d/%m/%Y') }}</td>
+              <td>{{ r.part.value }}</td>
+              <td>
+                {% if r.is_permitted %}
+                  <span class="badge bg-success">Có phép</span>
+                {% else %}
+                  <span class="badge bg-danger">Không phép</span>
+                {% endif %}
+              </td>
+              <td>{{ r.reason or '' }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="5" class="text-center text-muted">Không có bản ghi nghỉ trong tháng này.</td></tr>
+          {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
