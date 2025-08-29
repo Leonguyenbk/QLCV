@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -86,61 +87,82 @@
         </div>
 
         <div class="row g-4">
+            <!-- Danh sách nhân sự — primary -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-people fs-1 mb-3 text-primary"></i>
+                    <h5 class="card-title">Danh sách nhân sự</h5>
+                    <p class="card-text">Quản lý thông tin nhân viên</p>
+                    <a href="{{ url_for('main.list_employees') }}" class="btn btn-primary btn-sm stretched-link">Truy cập</a>
+                </div>
+                </div>
+            </div>
+
+            <!-- Danh sách công việc — success -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-card-checklist fs-1 mb-3 text-success"></i>
+                    <h5 class="card-title">Danh sách công việc</h5>
+                    <p class="card-text">Theo dõi các công việc đang thực hiện</p>
+                    <a href="#" class="btn btn-success btn-sm stretched-link">Truy cập</a>
+                </div>
+                </div>
+            </div>
+
+            <!-- Bổ sung công việc — info -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-plus-circle fs-1 mb-3 text-info"></i>
+                    <h5 class="card-title">Bổ sung công việc</h5>
+                    <p class="card-text">Thêm công việc mới hàng ngày</p>
+                    <a href="#" class="btn btn-info btn-sm stretched-link">Truy cập</a>
+                </div>
+                </div>
+            </div>
+
+            <!-- Tổng quan KPI — warning -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up-arrow fs-1 mb-3 text-warning"></i>
+                    <h5 class="card-title">Tổng quan KPI</h5>
+                    <p class="card-text">Thông tin hiệu suất công việc của các cá nhân</p>
+                    <a href="{{ url_for('main.kpi_absence_summary_all') }}" class="btn btn-warning btn-sm stretched-link">Truy cập</a>
+                </div>
+                </div>
+            </div>
+            {% if current_user.is_authenticated and (current_user.employee.is_manager or current_user.is_admin) %}
+            <!-- Đánh giá công việc thường xuyên — danger -->
             <div class="col-md-4">
                 <div class="card h-100 shadow-sm border-0">
                     <div class="card-body text-center">
-                        <i class="fas fa-users fa-3x mb-3 text-primary"></i>
-                        <h5 class="card-title">Danh sách nhân sự</h5>
-                        <p class="card-text">Quản lý thông tin nhân viên</p>
-                        <a href="{{ url_for('main.list_employees') }}" class="btn btn-primary btn-sm stretched-link">Truy cập</a>
+                        <i class="bi bi-bar-chart-line fs-1 mb-3 text-danger"></i>
+                        <h5 class="card-title">Đánh giá công việc thường xuyên</h5>
+                        <p class="card-text">Theo dõi và đánh giá hiệu suất công việc</p>
+                        <a href="#" class="btn btn-danger btn-sm stretched-link">Truy cập</a>
                     </div>
                 </div>
             </div>
+            {% endif %}
+            {% if current_user.is_authenticated and current_user.is_admin %}
+            <!-- Điều chỉnh nhân sự — secondary -->
             <div class="col-md-4">
                 <div class="card h-100 shadow-sm border-0">
                     <div class="card-body text-center">
-                        <i class="fas fa-list-check fa-3x mb-3 text-success"></i>
-                        <h5 class="card-title">Danh sách công việc</h5>
-                        <p class="card-text">Theo dõi các công việc đang thực hiện</p>
-                        <a href="#" class="btn btn-success btn-sm stretched-link">Truy cập</a>
+                        <i class="bi bi-person-gear fs-1 mb-3 text-secondary"></i>
+                        <h5 class="card-title">Điều chỉnh nhân sự</h5>
+                        <p class="card-text">Theo dõi và điều chỉnh nhân sự</p>
+                        <a href="{{ url_for('admin.index') }}" class="btn btn-secondary btn-sm stretched-link">Truy cập</a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body text-center">
-                        <i class="fas fa-plus-circle fa-3x mb-3 text-info"></i>
-                        <h5 class="card-title">Bổ sung công việc</h5>
-                        <p class="card-text">Thêm công việc mới hàng ngày</p>
-                        <a href="#" class="btn btn-info btn-sm stretched-link">Truy cập</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body text-center">
-                        <i class="fas fa-chart-line fa-3x mb-3 text-warning"></i>
-                        <h5 class="card-title">Tổng quan KPI</h5>
-                        <p class="card-text">Thông tin hiệu suất công việc của các cá nhân</p>
-                        <a href="{{ url_for('main.kpi_absence_summary_all') }}" class="btn btn-warning btn-sm stretched-link">Truy cập</a>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
-
-    <footer class="mt-auto py-4 bg-dark text-white">
-        <div class="container text-center">
-            <p class="mb-2">&copy; 2024 Hệ Thống Quản Lý. Mọi quyền được bảo lưu.</p>
-            <div>
-                <a href="#" class="text-white-50 me-3 text-decoration-none"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="text-white-50 me-3 text-decoration-none"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="text-white-50 me-3 text-decoration-none"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#" class="text-white-50 text-decoration-none"><i class="fab fa-github"></i></a>
-            </div>
-        </div>
-    </footer>
-
+    {% block footer %} {% include 'layout/footer.html' %} {% endblock %}
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

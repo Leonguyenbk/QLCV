@@ -1,10 +1,13 @@
 from app import create_app, db
 from app.models import Employee, Absence, AbsencePart, User, SystemRole
+from PIL import Image, ImageOps
+from pathlib import Path
+from werkzeug.utils import secure_filename
 from flask import current_app
 from calendar import monthrange
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
-import re
+import re, os, secrets
 
 def get_user_by_id(user_id):
     return User.query.get(user_id)
@@ -87,3 +90,40 @@ def ym_nav(y: int, m: int):
     prev_y, prev_m = (y-1, 12) if m == 1 else (y, m-1)
     next_y, next_m = (y+1, 1)  if m == 12 else (y, m+1)
     return f"{prev_m:02d}-{prev_y:04d}", f"{next_m:02d}-{next_y:04d}"
+
+# --- Hàm tiện ích để lưu ảnh ---
+def save_picture(form_picture):
+    """Lưu ảnh đại diện do người dùng tải lên, đổi tên và resize."""
+    # Lấy đuôi file an toàn + viết thường
+    orig_ext = Path(secure_filename(form_picture.filename)).suffix.lower()
+    if orig_ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+        orig_ext = ".jpg"  # fallback an toàn
+
+    # Tạo tên file ngẫu nhiên
+    picture_fn = f"{secrets.token_hex(8)}{orig_ext}"
+
+    # Thư mục đích: <app>/static/uploads/avatars
+    static_subdir = Path("uploads") / "avatars"
+    abs_dir = Path(current_app.root_path) / "static" / static_subdir
+    abs_dir.mkdir(parents=True, exist_ok=True)
+
+    # Mở + auto-fix xoay, resize
+    img = Image.open(form_picture)
+    img = ImageOps.exif_transpose(img)        # sửa xoay (nếu có EXIF)
+    img.thumbnail((200, 200))                 # resize vừa khung
+
+    # Nếu là PNG có alpha mà bạn muốn JPG, cần ghép nền trắng
+    if orig_ext in {".jpg", ".jpeg"} and img.mode in ("RGBA", "LA"):
+        bg = Image.new("RGB", img.size, (255, 255, 255))
+        bg.paste(img, mask=img.split()[-1])
+        img = bg
+    elif orig_ext in {".jpg", ".jpeg"} and img.mode != "RGB":
+        img = img.convert("RGB")
+
+    # Lưu file
+    abs_path = abs_dir / picture_fn
+    img.save(abs_path)
+
+    # TRẢ VỀ đường dẫn TƯƠNG ĐỐI dưới static, dạng POSIX (dùng /)
+    rel_path = (static_subdir / picture_fn).as_posix()   # "uploads/avatars/xxxx.jpg"
+    return rel_path

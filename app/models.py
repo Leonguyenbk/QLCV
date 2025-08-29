@@ -1,4 +1,5 @@
 # app/models.py
+from flask import app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date
@@ -10,7 +11,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy import Enum as SAEnum
 
-from . import db  # dùng relative import, KHÔNG import create_app
+from . import db
+# dùng relative import, KHÔNG import create_app
 
 # ==== Base ====
 class BaseModel(db.Model):
@@ -23,8 +25,10 @@ class OrgRole(PyEnum):
     DEPT_HEAD = "Trưởng/ phó phòng"  # Trưởng/Phó phòng
 
 class SystemRole(PyEnum):
-    ADMIN = "ADMIN"
-    STAFF = "STAFF"
+    ADMIN = "ADMIN"               # Toàn quyền hệ thống
+    HR_GENERAL = "HR_GENERAL"     # Quản lý nhân sự toàn cơ quan
+    HR_DEPARTMENT = "HR_DEPARTMENT"  # Quản lý nhân sự trong phòng
+    STAFF = "STAFF"      
 
 class User(UserMixin, BaseModel):
     __tablename__ = 'users'
@@ -33,7 +37,62 @@ class User(UserMixin, BaseModel):
     role = Column(SAEnum(SystemRole), nullable=False, default=SystemRole.STAFF)
     employee_id = Column(Integer, ForeignKey('employees.id'), unique=True, nullable=True)
 
-    employee = relationship('Employee', backref='user', lazy='joined')
+    @property
+    def is_admin(self):
+        """Kiểm tra người dùng có vai trò quản lý (Tổ trưởng, Trưởng phòng) hoặc là Admin hệ thống."""
+        return self.role == SystemRole.ADMIN
+    
+    @property
+    def is_hr_general(self):
+        """Kiểm tra người dùng có vai trò HR General hay không."""
+        return self.role == SystemRole.HR_GENERAL
+    
+    @property
+    def is_hr_department(self):
+        """Kiểm tra người dùng có vai trò HR Department hay không."""
+        return self.role == SystemRole.HR_DEPARTMENT
+
+    def can_manage(self, other_employee):
+        """
+        Kiểm tra xem người dùng hiện tại có quyền quản lý một nhân viên khác không.
+
+        Quy tắc:
+        - Admin có thể quản lý mọi người.
+        - Trưởng phòng (DEPT_HEAD) có thể quản lý mọi nhân viên trong phòng của mình.
+        - Tổ trưởng (TEAM_LEAD) có thể quản lý các Nhân viên (MEMBER) trong phòng của mình.
+        - Người dùng không thể tự quản lý chính mình.
+        """
+        if not self.is_authenticated or not other_employee:
+            return False
+
+        # Admin có toàn quyền quản lý
+        if self.role == SystemRole.ADMIN:
+            return True
+
+        # Nếu người dùng không phải là nhân viên, họ không thể quản lý ai (trừ Admin)
+        if not self.employee:
+            return False
+
+        # Người dùng không thể tự quản lý chính mình
+        if self.employee.id == other_employee.id:
+            return False
+
+        # Kiểm tra xem có cùng phòng ban không
+        is_in_same_dept = self.employee.department_id and \
+                          self.employee.department_id == other_employee.department_id
+
+        if not is_in_same_dept:
+            return False
+
+        # Trưởng phòng có thể quản lý mọi người trong phòng
+        if self.employee.org_role == OrgRole.DEPT_HEAD:
+            return True
+
+        # Tổ trưởng có thể quản lý các thành viên trong phòng
+        if self.employee.org_role == OrgRole.TEAM_LEAD and other_employee.org_role == OrgRole.MEMBER:
+            return True
+
+        return False
 
 # ==== Employee ====
 class Employee(BaseModel):
@@ -44,12 +103,17 @@ class Employee(BaseModel):
     position = Column(String(50), nullable=False)
     email = Column(String(100))
     phone = Column(String(15), nullable=True)
-
+    avatar_url = Column(String(255), nullable=True)
     department_id = Column(Integer, ForeignKey('departments.id'), nullable=True)
     org_role = Column(SAEnum(OrgRole), nullable=False, default=OrgRole.MEMBER, index=True)
+    user = db.relationship("User", backref="employee", uselist=False, cascade="all, delete")
     department = relationship('Department', back_populates='employees', lazy=True)
 
     job_details = relationship('JobDetail', back_populates='employee', lazy=True)
+    @property
+    def is_manager(self):
+        """Kiểm tra người dùng có vai trò quản lý (Tổ trưởng, Trưởng phòng)"""
+        return self.org_role == OrgRole.TEAM_LEAD or self.org_role == OrgRole.DEPT_HEAD
 
     # ✅ Quan hệ 1–n tới Absence dùng back_populates (đúng chuẩn)
     absences = relationship(
@@ -116,3 +180,4 @@ class Absence(BaseModel):
     def __str__(self):
         label = "Có phép" if self.is_permitted else "Không phép"
         return f"{self.employee_id} - {self.work_date} - {self.part.value} - {label}"
+    
