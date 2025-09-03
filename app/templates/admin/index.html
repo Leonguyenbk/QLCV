@@ -1,0 +1,152 @@
+{% extends 'admin/base.html' %}
+
+{% block head_css %}
+{{ super() }}
+<!-- Nhúng Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+    /* Icon lớn đẹp hơn */
+    .icon-lg {
+        font-size: 3rem;
+        opacity: 0.8;
+        transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    .card:hover .icon-lg {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+
+    /* Nâng cấp thẻ card */
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Văn bản */
+    .stat-text {
+        font-size: 1rem;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    .stat-link {
+        text-decoration: none;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+    .stat-link:hover {
+        text-decoration: underline;
+        color: #000 !important;
+    }
+
+    /* Màu viền trái */
+    .border-left-primary {
+        border-left: 6px solid #0d6efd !important;
+    }
+    .border-left-info {
+        border-left: 6px solid #0dcaf0 !important;
+    }
+    .border-left-warning {
+        border-left: 6px solid #ffc107 !important;
+    }
+    .border-left-danger {
+        border-left: 6px solid #dc3545 !important;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="row mb-4 text-center">
+            <div class="col-12">
+                <h1 class="h3 fw-bold text-dark">
+                    <i class="bi bi-speedometer2 text-primary"></i> Bảng điều khiển
+                </h1>
+                <p class="text-muted">Chào mừng trở lại, <strong>{{ current_user.employee.name }}</strong> 👋</p>
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="row">
+            <!-- Trở về trang chủ -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow-sm h-100 py-3">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-text text-primary">
+                                <a href="{{ url_for('main.index') }}" class="stat-link text-primary">
+                                    Trở về trang chủ
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-house-door icon-lg text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý User -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow-sm h-100 py-3">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-text text-info">
+                                <a href="{{ url_for('user.index_view') }}" class="stat-link text-info">
+                                    Quản lý User
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people icon-lg text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý Nhân sự -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow-sm h-100 py-3">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-text text-warning">
+                                <a href="{{ url_for('employee.index_view') }}" class="stat-link text-warning">
+                                    Quản lý Nhân sự
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-person-badge icon-lg text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Đăng xuất -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-danger shadow-sm h-100 py-3">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-text text-danger">
+                                <a href="{{ url_for('main.logout') }}" class="stat-link text-danger">
+                                    Đăng xuất
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-box-arrow-right icon-lg text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}

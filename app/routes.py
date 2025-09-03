@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, current_app, abort, flash, redirect, url_for
 from flask_login import login_user, logout_user, current_user, login_required
-from app.models import Employee, Department, Absence
+from app.models import Employee, Department, Absence, EmployeeHistory, TaskAssessment
 from . import db, utils, login
-from .forms import ProfileUpdateForm
+from .forms import ProfileUpdateForm, TaskAssessmentForm
 from .utils import save_picture
 from datetime import date
 from calendar import monthrange
@@ -75,6 +75,11 @@ def list_employees():
 @login_required
 def employee_detail(employee_id):
     employee = utils.get_employee_by_id(employee_id)
+    histories = (EmployeeHistory.query
+                .filter_by(employee_id=employee_id)
+                .order_by(EmployeeHistory.effective_from.desc(),
+                        EmployeeHistory.id.desc())
+                .all())
     if not employee:
         abort(404)
 
@@ -82,11 +87,13 @@ def employee_detail(employee_id):
         'static',
         filename=employee.avatar_url if employee and employee.avatar_url else 'images/default_avatar.png'
     )
+    deps = Department.query.with_entities(Department.id, Department.name).all()
+    dep_name = {d.id: d.name for d in deps}
 
     return render_template(
         'employees_details.html',
         employee=employee,
-        avatar_url=avatar_url
+        avatar_url=avatar_url, histories=histories, dep_name=dep_name
     )
 
 @main.route('/summary/all', methods=['GET'])
@@ -221,3 +228,22 @@ def profile():
     print(employee.avatar_url)
     print(image_file)
     return render_template('profile.html', title='Hồ sơ cá nhân', form=form, image_file=image_file)
+
+# --- Route cho trang đánh giá nhân viên ---
+@main.route("/assessments/new", methods=['GET', 'POST'])
+def new_assessment():
+    form = TaskAssessmentForm()
+    if form.validate_on_submit():
+        # Lưu thông tin đánh giá vào cơ sở dữ liệu
+        assessment = TaskAssessment(
+            employee_id=form.employee_id.data,
+            assessment_content=form.assessment_content.data,
+            score=form.score.data,
+            assessment_date=form.assessment_date.data,
+            assessor_id=current_user.id
+        )
+        db.session.add(assessment)
+        db.session.commit()
+        flash('Đánh giá đã được gửi!', 'success')
+        return redirect(url_for('main.kpi_detail', employee_id=form.employee_id.data))
+    return render_template('assessments/new.html', title='Đánh giá nhân viên', form=form)

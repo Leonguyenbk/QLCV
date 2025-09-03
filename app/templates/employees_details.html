@@ -46,4 +46,33 @@
         </div>
     </div>
 </div>
+<h4 class="mt-4">Lịch sử nhân sự</h4>
+<table class="table table-sm table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Hiệu lực từ</th>
+      <th>Đến</th>
+      <th>Phòng/Tổ</th>
+      <th>Vị trí</th>
+      <th>Vai trò</th>
+      <th>Loại thay đổi</th>
+      <th>Lý do</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for h in histories %}
+      <tr>
+        <td>{{ h.effective_from.strftime('%d/%m/%Y') }}</td>
+        <td>{{ h.effective_to.strftime('%d/%m/%Y') if h.effective_to else 'Hiện tại' }}</td>
+        <td>{{ dep_name.get(h.department_id, '—') }}</td>
+        <td>{{ h.position or '—' }}</td>
+        <td>{{ h.org_role.value if h.org_role else '—' }}</td>
+        <td>{{ h.change_type or '—' }}</td>
+        <td>{{ h.reason or '—' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="8" class="text-muted">Chưa có lịch sử.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

@@ -1,18 +1,16 @@
 # app/models.py
-from flask import app
+from flask import app, current_app as app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date
 from enum import Enum as PyEnum
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Date, ForeignKey,
-    Boolean, UniqueConstraint
+    CheckConstraint, Column, Integer, String, Text, DateTime, Date, ForeignKey,
+    Boolean, UniqueConstraint, Index, Float
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy import Enum as SAEnum
-
 from . import db
-# dùng relative import, KHÔNG import create_app
 
 # ==== Base ====
 class BaseModel(db.Model):
@@ -51,6 +49,11 @@ class User(UserMixin, BaseModel):
     def is_hr_department(self):
         """Kiểm tra người dùng có vai trò HR Department hay không."""
         return self.role == SystemRole.HR_DEPARTMENT
+    
+    @property
+    def can_manage_hr(self):
+        """Trả về True nếu user có quyền quản lý nhân sự"""
+        return self.role in [SystemRole.ADMIN, SystemRole.HR_GENERAL, SystemRole.HR_DEPARTMENT]
 
     def can_manage(self, other_employee):
         """
@@ -94,6 +97,29 @@ class User(UserMixin, BaseModel):
 
         return False
 
+class EmployeeHistory(db.Model):
+    __tablename__ = "employee_history"
+
+    id            = Column(Integer, primary_key=True)
+    employee_id   = Column(Integer, ForeignKey('employees.id', ondelete="CASCADE"), index=True, nullable=False)
+
+    effective_from = Column(Date, nullable=False)
+    effective_to   = Column(Date, nullable=True)  # NULL = còn hiệu lực
+
+    # snapshot các trường đang có trong Employee
+    department_id  = Column(Integer, index=True)
+    position       = Column(String(50))
+    org_role       = Column(SAEnum(OrgRole), index=True)
+    change_type    = Column(String(30))           # TRANSFER_DEPT / PROMOTION / ROLE_CHANGE / UPDATE / CREATE
+    reason         = Column(String(255))
+    source         = Column(String(20))           # admin/api/script
+    changed_by     = Column(String(100))
+    created_at     = Column(DateTime, default=datetime.now, index=True)
+
+    __table_args__ = (
+        Index("ix_hist_emp_from", "employee_id", "effective_from"),
+    )
+
 # ==== Employee ====
 class Employee(BaseModel):
     __tablename__ = 'employees'
@@ -108,8 +134,10 @@ class Employee(BaseModel):
     org_role = Column(SAEnum(OrgRole), nullable=False, default=OrgRole.MEMBER, index=True)
     user = db.relationship("User", backref="employee", uselist=False, cascade="all, delete")
     department = relationship('Department', back_populates='employees', lazy=True)
-
     job_details = relationship('JobDetail', back_populates='employee', lazy=True)
+    histories = relationship("EmployeeHistory", backref="employee", lazy="dynamic", cascade="all")
+    task_assessments = relationship("TaskAssessment", back_populates="employee", lazy="dynamic", cascade="all")
+
     @property
     def is_manager(self):
         """Kiểm tra người dùng có vai trò quản lý (Tổ trưởng, Trưởng phòng)"""
@@ -151,7 +179,33 @@ class JobDetail(BaseModel):
     employee = relationship('Employee', back_populates='job_details', lazy=True)
 
     def __str__(self):
-        return self.title
+        return self.title  
+
+# Thêm bảng mới cho việc đánh giá nhiệm vụ thường xuyên
+class TaskAssessment(BaseModel):
+    __tablename__ = 'task_assessments'
+    # Khóa ngoại liên kết với nhân viên
+    employee_id = Column(Integer, ForeignKey('employees.id'), nullable=False, index=True)
+    # Nội dung chi tiết về việc đánh giá
+    assessment_content = Column(Text, nullable=True)
+    # Điểm số hoặc xếp loại
+    score = Column(Float, nullable=False) # Có thể dùng Integer hoặc Float
+    # Ngày đánh giá
+    assessment_date = Column(Date, nullable=False, default=date.today)
+    # Người đánh giá (có thể là tên hoặc ID của người quản lý)
+    assessor_id = Column(Integer, nullable=False)
+     # Thiết lập quan hệ ngược lại với bảng Employee
+    employee = relationship(
+        'Employee',
+        back_populates='task_assessments',
+        lazy='selectin'
+        )
+    __table_args__ = (
+        # Đảm bảo điểm số nằm trong khoảng từ 0 đến 100
+        CheckConstraint('score >= 0.0 AND score <= 100.0', name='score_range_check'),
+    )
+    def __str__(self):
+        return f"Đánh giá cho {self.employee_id} - {self.task_title} vào ngày {self.assessment_date}"
 
 # ==== Absence (chuyên cần tối giản) ====
 class AbsencePart(PyEnum):
